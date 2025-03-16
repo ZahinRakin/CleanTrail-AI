@@ -1,14 +1,22 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "I am doing investigation with poetry, fastapi and other tools."
-authors = [{ name = "Zahin_Abdullah", email = "zahinabdullahrakin@gmail.com" }]
+description = "learning phase"
+authors = [
+    {name = "Zahin_Abdullah",email = "zahinabdullahrakin@gmail.com"}
+]
+license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["fastapi (>=0.115.11,<0.116.0)", "uvicorn (>=0.34.0,<0.35.0)"]
+dependencies = [
+    "fastapi (>=0.115.11,<0.116.0)",
+    "uvicorn (>=0.34.0,<0.35.0)",
+    "pydantic (>=2.10.6,<3.0.0)",
+    "pydantic-settings (>=2.8.1,<3.0.0)"
+]
 
 [tool.poetry.scripts]
-dev = "backend.main:main"
+dev = "backend.main:main" # i have added this but still why the (poetry run dev) command doesn't work
 
 
 [build-system]
