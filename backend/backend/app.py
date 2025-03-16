@@ -1,6 +1,7 @@
 from fastapi import FastAPI # type:ignore
 import uvicorn #type: ignore
 from fastapi.middleware.cors import CORSMiddleware #type: ignore
+from backend.routes.test_routes import router as test_router
 
 
 app = FastAPI()
@@ -18,8 +19,4 @@ app.add_middleware(
   allow_headers=["*"]
 )
 
-@app.get("/api/v1/healthcheck")
-async def healthcheck():
-  return {
-    "working" : True
-  }
+app.include_router(test_router, prefix="/api/v1/test")
