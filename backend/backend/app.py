@@ -35,11 +35,6 @@ app.add_middleware(
 async def startup_event():
   await connectDB()
 
-@app.on_event("shutdown")
-async def shutdown_event():
-  for key in list(os.environ.keys()):
-    os.environ.pop(key, None)
-
 app.include_router(healthcheck_router, prefix="/api/v1/healthcheck")
 app.include_router(user_router, prefix="/api/v1/user")
 app.include_router(store_owner_router, prefix="/api/v1/storeowner")

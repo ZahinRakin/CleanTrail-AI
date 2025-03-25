@@ -9,23 +9,17 @@ from backend.utils.token import gen_access_token
 from passlib.context import CryptContext #type: ignore
 import os
 import json
+from backend.models.user_model import User
 
 
 pass_context = CryptContext(schemes="bcrypt", deprecated="auto")
 
 
-async def register(req: Request):  
-  raw_data = await req.json()
-  allowed_keys = ["fname", "lname", "username", "email", "password"]
-  valid_user_data = {key: value for key, value in raw_data.items() if key in allowed_keys and raw_data[key]}
-
-  
-  sanitized_data = await sanitize_user_data(valid_user_data)
-
+async def register(user: User):  
   does_exist = bool(await User.find_one({
     "$or": [
-      {"username": sanitized_data["username"]},
-      {"email": sanitized_data["email"]}
+      {"username": user.username},
+      {"email": user.email}
     ]
   }))
   
@@ -33,14 +27,12 @@ async def register(req: Request):
   if does_exist:
     raise HTTPException(status_code=400, detail="Username or email already in use") 
   
-  new_user = await User(**sanitized_data).insert()
+  new_user = User(**user.model_dump())
   
   new_user.refresh_token = await gen_refresh_token(str(new_user.id))
-  await new_user.save()
+  await new_user.insert()
     
-  return {
-    "message": "one day it will be solved"
-  }
+  return {"message": "successfully created user"}
   
   
   

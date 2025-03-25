@@ -6,7 +6,7 @@ import os
 async def gen_refresh_token(user_id: str):
   payload = {
     "id": user_id,
-    "exp": datetime.now(timezone.utc) + timedelta(minutes=60)
+    "exp": datetime.now(timezone.utc) + timedelta(minutes=int(os.getenv("REFRESH_DURATION_MINUTES")))
   }
   return jwt.encode( # this is a synchronous program so no await
     claims=payload, 
@@ -19,7 +19,7 @@ async def gen_access_token(user):
     "id": str(user.id),
     "username": user.username,
     "email": user.email,
-    "exp": datetime.now(timezone.utc) + timedelta(minutes=50)
+    "exp": datetime.now(timezone.utc) + timedelta(minutes=int(os.getenv("ACCESS_DURATION_MINUTES")))
   }
   
   return jwt.encode(claims=payload, key=os.getenv("ACCESS_TOKEN_SECRET"), algorithm=os.getenv("JWT_ALGORITHM"))
