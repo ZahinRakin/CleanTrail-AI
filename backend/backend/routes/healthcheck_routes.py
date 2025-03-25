@@ -5,7 +5,6 @@ from backend.middlewares.verifyJWT import verifyJWT
 router = APIRouter()
 
 
-@router.post("/all", dependencies=[Depends(verifyJWT)])
+@router.post("/all")
 async def do(request: Request):
-  print("is authorized: ", request.state.authorization)
   return await check_all()

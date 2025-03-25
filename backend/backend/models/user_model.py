@@ -1,10 +1,8 @@
-from beanie import Document, before_event # type:ignore
-from beanie.odm.fields import Link # type:ignore
+from beanie import Document # type:ignore
 from pydantic import EmailStr, Field
 from typing import Optional
 from datetime import datetime, timezone
 from passlib.context import CryptContext # type: ignore
-from jose import jwt # type: ignore
 
 pass_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

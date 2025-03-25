@@ -27,9 +27,6 @@ async def check_all():
         "exp": datetime.now(timezone.utc) + timedelta(minutes=30)
     }
     refresh_token = jwt.encode(claims=payload, key=os.getenv("REFRESH_TOKEN_SECRET"), algorithm="HS256")
-    # user.update_one({"id": user.id}, {"$set": {
-    #     "refresh_token": refresh_token
-    # }})
     user.refresh_token = refresh_token
     await user.save()
 
@@ -70,13 +67,13 @@ async def check_all():
 
     # store
     store = await Store(
-        name="zarbazar",
+        name="zarBAzar",
         products=[product]
     ).insert()
 
     # store owner (FIXED: should reference Store, not Product)
     store_owner = await StoreOwner(
-        stores=[store]  # ✅ FIXED: should reference stores, not products
+        stores=[store]  # FIXED: should reference stores, not products
     ).insert()
 
     return {

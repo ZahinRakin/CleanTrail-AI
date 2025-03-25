@@ -1,5 +1,6 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI # type: ignore
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
+import os
 
 from .DB.connectDB import connectDB
 
@@ -19,7 +20,7 @@ app = FastAPI()
 origins=[
   "http://localhost:5173",
   "http://localhost:5174",
-  "http://localhost:5175",
+  "http://localhost:5175"
 ]
 
 app.add_middleware(
@@ -30,9 +31,14 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-@app.on_event("startup")
+@app.on_event("startup") # from contextlib import asynccontextmanager
 async def startup_event():
   await connectDB()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+  for key in list(os.environ.keys()):
+    os.environ.pop(key, None)
 
 app.include_router(healthcheck_router, prefix="/api/v1/healthcheck")
 app.include_router(user_router, prefix="/api/v1/user")
