@@ -10,6 +10,7 @@ from passlib.context import CryptContext #type: ignore
 import os
 import json
 from backend.models.user_model import User
+from pydantic import BaseModel
 
 
 pass_context = CryptContext(schemes="bcrypt", deprecated="auto")
@@ -23,54 +24,63 @@ async def register(user: User):
     ]
   }))
   
-  print(f"does the user exist = {does_exist}")
   if does_exist:
     raise HTTPException(status_code=400, detail="Username or email already in use") 
   
-  new_user = User(**user.model_dump())
-  
-  new_user.refresh_token = await gen_refresh_token(str(new_user.id))
-  await new_user.insert()
+  await User(**user.model_dump()).insert()
     
   return {"message": "successfully created user"}
   
   
   
-async def login(req:Request):
-  username, password = await req.json()
-  username = username.strip()
-  password = password.strip()
-  
-  user = await User.get_one(User.username == username)
+async def login(login_data: BaseModel):
+  user = await User.find_one(User.username == login_data.username)
   
   if not user:
-    res.status_code = 404
-    return {"message": "user not found"}
+    return JSONResponse(content={"message": "user not found"}, status_code=404)
   
-  if not pass_context.verify(password, user.password):
-    res.status_code = 400
-    return {"message": "password is wrong"}
+  if not pass_context.verify(login_data.password, user.password):
+    return JSONResponse(content={"message": "password is wrong"}, status_code=400)
   
-  refresh_token = gen_refresh_token(user_id=user.id)
-  print(f"inside login: refresh token: {refresh_token}") # debugging log
-  access_token = gen_access_token(user)
-  print(f"inside login: access token: {access_token}") # debugging log
+  refresh_token = await gen_refresh_token(str(user.id))
+  access_token = await gen_access_token(user)
   
   user.refresh_token = refresh_token
   await user.save()
   
+  res = JSONResponse(
+    content={
+      "message": "login successful"
+    },
+    headers={"Authorization": f"Bearer {access_token}"}
+  )
   res.set_cookie(
-    key = "refToken",
+    key = "refreshToken",
     value = refresh_token,
     httponly = True,
     secure = os.getenv("ENVIRONMENT") == "production",
     samesite = "Lax",
-    max_age = os.getenv("COOKIE_MAX_AGE")
+    max_age = int(os.getenv("COOKIE_MAX_AGE"))
   )
   
-  return {
-    "access_token": access_token, 
-    "message": "login successful"
-  }
+  return res
+
+async def dummy_protected_route(user):
+  return {"user": user.username}
   
+async def refresh_access_token(access_token: str) -> JSONResponse:
+    decoded_token = jwt.get_unverified_claims(access_token)
+    
+    user = await User.get(decoded_token.get("id"))
+    if not user:
+        raise HTTPException(status_code=404, detail="No user found. Is this a fabricated token?")
+
+    new_access_token = await gen_access_token(user)
+
+    return JSONResponse(
+        content={
+            "message": "Successfully refreshed the access token. token in header",
+        },
+        headers={"Authorization": f"Bearer {new_access_token}"}
+    )
   

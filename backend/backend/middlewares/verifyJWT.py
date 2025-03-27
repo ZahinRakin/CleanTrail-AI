@@ -16,7 +16,7 @@ async def verifyJWT(request: Request):
             key=os.getenv("ACCESS_TOKEN_SECRET"),
             algorithms=[os.getenv("JWT_ALGORITHM")]
         )
-        
+        print(f"inside verifyJWT decoded token : {decoded_token}") # debugging log
         user_id = decoded_token.get('id')
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -25,8 +25,9 @@ async def verifyJWT(request: Request):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        request.state.user = user
+        return user
     except jwt.JWTError as e:
-        raise HTTPException(status_code=401, detail="Token decoding failed")
+        print(e)
+        raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail=str(e))
