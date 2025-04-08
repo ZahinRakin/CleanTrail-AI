@@ -4,10 +4,11 @@ from datetime import datetime, timezone
 from pydantic import Field
 
 from .user_model import User
+from .product_model import Product
 
 
 class Notification(Document):
-  sender: Link[User]
+  product: Link[Product]
   receiver: Link[User]
   title: str
   description: str

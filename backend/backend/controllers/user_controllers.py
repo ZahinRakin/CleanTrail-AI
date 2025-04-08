@@ -30,9 +30,7 @@ async def register(user: User):
   await User(**user.model_dump()).insert()
     
   return {"message": "successfully created user"}
-  
-  
-  
+
 async def login(login_data: BaseModel):
   user = await User.find_one(User.username == login_data.username)
   
@@ -68,7 +66,7 @@ async def login(login_data: BaseModel):
 async def dummy_protected_route(user):
   return {"user": user.username}
   
-async def refresh_access_token(access_token: str) -> JSONResponse:
+async def refresh_access_token(access_token: str):
     decoded_token = jwt.get_unverified_claims(access_token)
     
     user = await User.get(decoded_token.get("id"))
